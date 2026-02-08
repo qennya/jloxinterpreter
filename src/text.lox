@@ -1,0 +1,5 @@
+/* outer
+   /* inner */
+   still outer
+*/
+var x = 123;
