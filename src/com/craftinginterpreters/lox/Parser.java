@@ -27,7 +27,15 @@ class Parser {
     }
 
     private Expr comma() {
-        Expr expr = conditional();
+        Expr expr;
+
+        if (match(COMMA)) {
+            Token operator = previous();
+            reportError(operator, "Oops! Expected left-hand operand.");
+            expr = conditional(); // right operand at correct precedence
+        } else {
+            expr = conditional();
+        }
 
         while (match(COMMA)) {
             Token operator = previous();
@@ -51,11 +59,16 @@ class Parser {
         return expr;
     }
 
-
-
-
     private Expr equality() {
-        Expr expr = comparison();
+        Expr expr;
+
+        if (match(BANG_EQUAL, EQUAL_EQUAL)) {
+            Token operator = previous();
+            reportError(operator, "Oops! Expected left-hand operand.");
+            expr = comparison();
+        } else {
+            expr = comparison();
+        }
 
         while (match(BANG_EQUAL, EQUAL_EQUAL)) {
             Token operator = previous();
@@ -67,7 +80,15 @@ class Parser {
     }
 
     private Expr comparison() {
-        Expr expr = term();
+        Expr expr;
+
+        if (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
+            Token operator = previous();
+            reportError(operator, "Oops! Expected left-hand operand.");
+            expr = term();
+        } else {
+            expr = term();
+        }
 
         while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
             Token operator = previous();
@@ -79,7 +100,15 @@ class Parser {
     }
 
     private Expr term() {
-        Expr expr = factor();
+        Expr expr;
+
+        if (match(PLUS)) {
+            Token operator = previous();
+            reportError(operator, "Oops! Expected left-hand operand.");
+            expr = factor();
+        } else {
+            expr = factor();
+        }
 
         while (match(MINUS, PLUS)) {
             Token operator = previous();
@@ -91,7 +120,15 @@ class Parser {
     }
 
     private Expr factor() {
-        Expr expr = unary();
+        Expr expr;
+
+        if (match(SLASH, STAR)) {
+            Token operator = previous();
+            reportError(operator, "Oops! Expected left-hand operand.");
+            expr = unary();
+        } else {
+            expr = unary();
+        }
 
         while (match(SLASH, STAR)) {
             Token operator = previous();
@@ -138,6 +175,10 @@ class Parser {
     private ParseError error(Token token, String message) {
         Lox.error(token, message);
         return new ParseError();
+    }
+
+    private void reportError(Token token, String message) {
+        Lox.error(token, message);
     }
 
     private void synchronize() {
