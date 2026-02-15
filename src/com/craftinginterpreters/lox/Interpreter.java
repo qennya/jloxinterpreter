@@ -79,7 +79,13 @@ class Interpreter implements Expr.Visitor<Object> {
                         "Operands must be two numbers or at least one string.");
             case SLASH:
                 checkNumberOperands(expr.operator, left, right);
-                return (double) left / (double) right;
+
+                double denominator = (double) right;
+                if (denominator == 0) {
+                    throw new RuntimeError(expr.operator, "Division by zero.");
+                }
+                return (double) left / denominator;
+
             case STAR:
                 checkNumberOperands(expr.operator, left, right);
                 return (double) left * (double) right;
