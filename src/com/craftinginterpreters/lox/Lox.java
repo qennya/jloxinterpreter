@@ -59,7 +59,13 @@ public class Lox {
         // Stop if there was a syntax error.
         if (hadError) return;
 
-        interpreter.interpret(statements);
+        if (statements.size() == 1 && statements.get(0) instanceof Stmt.Expression) {
+            Stmt.Expression stmt = (Stmt.Expression) statements.get(0);
+            Object value = interpreter.evaluate(stmt.expression);
+            System.out.println(interpreter.stringify(value));
+        } else {
+            interpreter.interpret(statements);
+        }
     }
 
     static void error(int line, String message) {

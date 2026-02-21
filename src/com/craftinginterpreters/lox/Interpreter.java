@@ -18,7 +18,7 @@ class Interpreter implements Expr.Visitor<Object>,
         }
     }
 
-    private Object evaluate(Expr expr) {
+    Object evaluate(Expr expr) {
         return expr.accept(this);
     }
 
@@ -175,7 +175,7 @@ class Interpreter implements Expr.Visitor<Object>,
         throw new RuntimeError(operator, "Operands must be numbers.");
     }
 
-    private String stringify(Object object) {
+    String stringify(Object object) {
         if (object == null) return "nil";
 
         if (object instanceof Double) {
