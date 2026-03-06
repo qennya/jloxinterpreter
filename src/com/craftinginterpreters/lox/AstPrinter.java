@@ -33,6 +33,11 @@ class AstPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitFunctionExpr(Expr.Function expr) {
+        return "(fun ...)";
+    }
+
+    @Override
     public String visitCallExpr(Expr.Call expr) {
         // Print as: (call <callee> <arg1> <arg2> ...)
         Expr[] parts = new Expr[1 + expr.arguments.size()];
