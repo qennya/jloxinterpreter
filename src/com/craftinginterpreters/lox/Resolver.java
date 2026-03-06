@@ -7,7 +7,22 @@ import java.util.Stack;
 
 class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     private final Interpreter interpreter;
-    private final Stack<Map<String, Boolean>> scopes = new Stack<>();
+
+    private static class VarState {
+        boolean defined;
+        boolean used;
+        final Token name;
+
+        VarState(Token name) {
+            this.name = name;
+            this.defined = false;
+            this.used = false;
+        }
+    }
+
+    private final Stack<Map<String, VarState>> scopes = new Stack<>();
+
+
     private FunctionType currentFunction = FunctionType.NONE;
 
     Resolver(Interpreter interpreter) {
@@ -135,10 +150,12 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitVariableExpr(Expr.Variable expr) {
-        if (!scopes.isEmpty() &&
-                scopes.peek().get(expr.name.lexeme) == Boolean.FALSE) {
-            Lox.error(expr.name,
-                    "Can't read local variable in its own initializer.");
+        if (!scopes.isEmpty()) {
+            VarState state = scopes.peek().get(expr.name.lexeme);
+            if (state != null && !state.defined) {
+                Lox.error(expr.name,
+                        "Can't read local variable in its own initializer.");
+            }
         }
 
         resolveLocal(expr, expr.name);
@@ -167,33 +184,50 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     private void beginScope() {
-        scopes.push(new HashMap<String, Boolean>());
+        scopes.push(new HashMap<String, VarState>());
     }
 
     private void endScope() {
-        scopes.pop();
+        Map<String, VarState> scope = scopes.pop();
+
+        for (VarState state : scope.values()) {
+            // Only warn for locals that finished being defined and were never read.
+            if (state.defined && !state.used) {
+                // Optional convention: allow `_unused` variables without errors.
+                if (state.name.lexeme.startsWith("_")) continue;
+
+                Lox.error(state.name,
+                        "Local variable '" + state.name.lexeme + "' is never used.");
+            }
+        }
     }
 
     private void declare(Token name) {
         if (scopes.isEmpty()) return;
 
-        Map<String, Boolean> scope = scopes.peek();
+        Map<String, VarState> scope = scopes.peek();
 
         if (scope.containsKey(name.lexeme)) {
             Lox.error(name,
                     "Already a variable with this name in this scope.");
         }
 
-        scope.put(name.lexeme, false);
+        scope.put(name.lexeme, new VarState(name));
     }
     private void define(Token name) {
         if (scopes.isEmpty()) return;
-        scopes.peek().put(name.lexeme, true);
+
+        VarState state = scopes.peek().get(name.lexeme);
+        if (state != null) state.defined = true;
     }
 
     private void resolveLocal(Expr expr, Token name) {
         for (int i = scopes.size() - 1; i >= 0; i--) {
-            if (scopes.get(i).containsKey(name.lexeme)) {
+            Map<String, VarState> scope = scopes.get(i);
+            VarState state = scope.get(name.lexeme);
+
+            if (state != null) {
+                state.used = true; // ✅ this is the “never used” tracking
                 interpreter.resolve(expr, scopes.size() - 1 - i);
                 return;
             }
