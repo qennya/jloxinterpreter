@@ -1,8 +1,39 @@
-var a = 0;
-var temp;
+// index_locals_test.lox
+// Exercises:
+// 1) locals in same scope (indexing)
+// 2) shadowing (different scopes)
+// 3) closures (depth + index)
+// 4) globals still work (name-based fallback)
 
-for (var b = 1; a < 10000; b = temp + b) {
-  print a;
-  temp = a;
-  a = b;
+print " ☆ ☆ ☆ locals are in same scope  ☆ ☆ ☆";
+{
+  var a = 1;
+  var b = 2;
+  var c = 3;
+  print a + b + c; // 6
 }
+
+print " ☆ ☆ ☆ shadowing  ☆ ☆ ☆";
+var x = "global";
+{
+  var x = "local";
+  print x; // local
+}
+print x; // global
+
+print " ☆ ☆ ☆ closure captures  ☆ ☆ ☆";
+fun outer(p) {
+  var q = p + 1;     // local slot in outer scope
+
+  fun inner(r) {     // r is parameter slot in inner scope
+    print p + q + r; // reads two captured locals + one param
+    q = q + 10;      // assigns captured local (tests assignAt)
+    print q;         // confirm updated value persists
+  }
+
+  return inner;
+}
+
+var f = outer(10);
+f(5);   // 10 + 11 + 5 = 26, then q becomes 21
+f(5);   // 10 + 21 + 5 = 36, then q becomes 31
