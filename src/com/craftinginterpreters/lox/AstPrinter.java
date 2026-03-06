@@ -15,6 +15,7 @@ class AstPrinter implements Expr.Visitor<String> {
         return parenthesize(expr.operator.lexeme, expr.left, expr.right);
     }
 
+
     @Override
     public String visitGroupingExpr(Expr.Grouping expr) {
         return parenthesize("group", expr.expression);
@@ -29,6 +30,17 @@ class AstPrinter implements Expr.Visitor<String> {
     @Override
     public String visitUnaryExpr(Expr.Unary expr) {
         return parenthesize(expr.operator.lexeme, expr.right);
+    }
+
+    @Override
+    public String visitCallExpr(Expr.Call expr) {
+        // Print as: (call <callee> <arg1> <arg2> ...)
+        Expr[] parts = new Expr[1 + expr.arguments.size()];
+        parts[0] = expr.callee;
+        for (int i = 0; i < expr.arguments.size(); i++) {
+            parts[i + 1] = expr.arguments.get(i);
+        }
+        return parenthesize("call", parts);
     }
 
     @Override
