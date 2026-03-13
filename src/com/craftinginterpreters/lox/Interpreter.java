@@ -63,14 +63,25 @@ class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
         environment.define(stmt.name.lexeme, null);
+
         Map<String, LoxFunction> methods = new HashMap<>();
+        Map<String, LoxFunction> staticMethods = new HashMap<>();
+
         for (Stmt.Function method : stmt.methods) {
-            LoxFunction function = new LoxFunction(method, environment,
-                    method.name.lexeme.equals("init"));
-            methods.put(method.name.lexeme, function);
+            LoxFunction function = new LoxFunction(
+                    method,
+                    environment,
+                    method.name.lexeme.equals("init")
+            );
+
+            if (method.isStatic) {
+                staticMethods.put(method.name.lexeme, function);
+            } else {
+                methods.put(method.name.lexeme, function);
+            }
         }
 
-        LoxClass klass = new LoxClass(stmt.name.lexeme, methods);
+        LoxClass klass = new LoxClass(stmt.name.lexeme, methods, staticMethods);
         environment.assign(stmt.name, klass);
         return null;
     }

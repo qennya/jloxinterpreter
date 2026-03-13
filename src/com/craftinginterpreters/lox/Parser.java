@@ -47,11 +47,11 @@ class Parser {
 
         List<Stmt.Function> methods = new ArrayList<>();
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
-            methods.add(function("method"));
+            boolean isStatic = match(CLASS);
+            methods.add(function("method", isStatic));
         }
 
         consume(RIGHT_BRACE, "Expect '}' after class body.");
-
         return new Stmt.Class(name, methods);
     }
 
@@ -168,6 +168,11 @@ class Parser {
     }
 
     private Stmt.Function function(String kind) {
+        return function(kind, false);
+    }
+
+
+    private Stmt.Function function(String kind, boolean isStatic) {
         Token name = consume(IDENTIFIER, "Expect " + kind + " name.");
         consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
         List<Token> parameters = new ArrayList<>();
@@ -185,7 +190,7 @@ class Parser {
 
         consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
         List<Stmt> body = block();
-        return new Stmt.Function(name, parameters, body);
+        return new Stmt.Function(name, parameters, body, isStatic);
     }
 
     private List<Stmt> block() {

@@ -3,20 +3,30 @@ package com.craftinginterpreters.lox;
 import java.util.List;
 import java.util.Map;
 
-class LoxClass implements LoxCallable {
+class LoxClass extends LoxInstance implements LoxCallable {
     final String name;
     private final Map<String, LoxFunction> methods;
 
-    LoxClass(String name, Map<String, LoxFunction> methods) {
+    LoxClass(String name,
+             Map<String, LoxFunction> methods,
+             Map<String, LoxFunction> staticMethods) {
+        super();
         this.name = name;
         this.methods = methods;
+
+        // Class object is an "instance" of itself.
+        this.klass = this;
+
+        // Store static methods as fields on the class object.
+        for (Map.Entry<String, LoxFunction> entry : staticMethods.entrySet()) {
+            this.set(entry.getKey(), entry.getValue().bind(this));
+        }
     }
 
     LoxFunction findMethod(String name) {
         if (methods.containsKey(name)) {
             return methods.get(name);
         }
-
         return null;
     }
 
@@ -26,8 +36,7 @@ class LoxClass implements LoxCallable {
     }
 
     @Override
-    public Object call(Interpreter interpreter,
-                       List<Object> arguments) {
+    public Object call(Interpreter interpreter, List<Object> arguments) {
         LoxInstance instance = new LoxInstance(this);
 
         LoxFunction initializer = findMethod("init");
@@ -43,5 +52,4 @@ class LoxClass implements LoxCallable {
         if (initializer == null) return 0;
         return initializer.arity();
     }
-
 }
