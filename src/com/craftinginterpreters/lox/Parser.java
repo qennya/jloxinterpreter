@@ -48,7 +48,34 @@ class Parser {
         List<Stmt.Function> methods = new ArrayList<>();
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
             boolean isStatic = match(CLASS);
-            methods.add(function("method", isStatic));
+
+            Token memberName = consume(IDENTIFIER, "Expect method name.");
+
+            // Normal method: has parameter list
+            if (match(LEFT_PAREN)) {
+                List<Token> parameters = new ArrayList<>();
+                if (!check(RIGHT_PAREN)) {
+                    do {
+                        if (parameters.size() >= 255) {
+                            error(peek(), "Can't have more than 255 parameters.");
+                        }
+                        parameters.add(consume(IDENTIFIER, "Expect parameter name."));
+                    } while (match(COMMA));
+                }
+                consume(RIGHT_PAREN, "Expect ')' after parameters.");
+
+                consume(LEFT_BRACE, "Expect '{' before method body.");
+                List<Stmt> body = block();
+
+                methods.add(new Stmt.Function(memberName, parameters, body, isStatic, false));
+            }
+            // Getter: no parameter list, body starts immediately
+            else {
+                consume(LEFT_BRACE, "Expect '{' before getter body.");
+                List<Stmt> body = block();
+
+                methods.add(new Stmt.Function(memberName, new ArrayList<>(), body, isStatic, true));
+            }
         }
 
         consume(RIGHT_BRACE, "Expect '}' after class body.");
@@ -190,7 +217,7 @@ class Parser {
 
         consume(LEFT_BRACE, "Expect '{' before " + kind + " body.");
         List<Stmt> body = block();
-        return new Stmt.Function(name, parameters, body, isStatic);
+        return new Stmt.Function(name, parameters, body, isStatic, false);
     }
 
     private List<Stmt> block() {

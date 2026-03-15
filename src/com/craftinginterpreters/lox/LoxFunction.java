@@ -5,6 +5,8 @@ import java.util.List;
 class LoxFunction implements LoxCallable {
     private final Stmt.Function declaration;
     private final Environment closure;
+    private final boolean isGetter;
+
 
     private final boolean isInitializer;
 
@@ -13,6 +15,7 @@ class LoxFunction implements LoxCallable {
         this.isInitializer = isInitializer;
         this.closure = closure;
         this.declaration = declaration;
+        this.isGetter = declaration.isGetter;
     }
 
     LoxFunction bind(LoxInstance instance) {
@@ -26,6 +29,8 @@ class LoxFunction implements LoxCallable {
     public String toString() {
         return "<fn " + declaration.name.lexeme + ">";
     }
+
+    boolean isGetter() { return isGetter; }
 
     @Override
     public int arity() {

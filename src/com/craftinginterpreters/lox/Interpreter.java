@@ -317,8 +317,27 @@ class Interpreter implements Expr.Visitor<Object>,
     @Override
     public Object visitGetExpr(Expr.Get expr) {
         Object object = evaluate(expr.object);
+
         if (object instanceof LoxInstance) {
-            return ((LoxInstance) object).get(expr.name);
+            LoxInstance instance = (LoxInstance) object;
+            String prop = expr.name.lexeme;
+
+            // 1) Real field? return it.
+            if (instance.hasField(prop)) {
+                return instance.getField(prop);
+            }
+
+            // 2) Method? If getter, execute now. Else return bound function.
+            LoxFunction method = instance.findMethod(prop);
+            if (method != null) {
+                if (method.isGetter()) {
+                    return method.bind(instance).call(this, List.of());
+                }
+                return method.bind(instance);
+            }
+
+            throw new RuntimeError(expr.name,
+                    "Undefined property '" + prop + "'.");
         }
 
         throw new RuntimeError(expr.name,

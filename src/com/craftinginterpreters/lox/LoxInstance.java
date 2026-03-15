@@ -35,6 +35,18 @@ class LoxInstance {
         fields.put(name, value);
     }
 
+    boolean hasField(String name) {
+        return fields.containsKey(name);
+    }
+
+    Object getField(String name) {
+        return fields.get(name);
+    }
+
+    LoxFunction findMethod(String name) {
+        return klass.findMethod(name);
+    }
+
     @Override
     public String toString() {
         return klass.name + " instance";
