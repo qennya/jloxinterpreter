@@ -16,6 +16,10 @@ class LoxClass implements LoxCallable {
         this.methods = methods;
     }
 
+    void defineMethod(String name, LoxFunction function) {
+        methods.put(name, function);
+    }
+
     LoxFunction findMethod(String name) {
         if (methods.containsKey(name)) {
             return methods.get(name);

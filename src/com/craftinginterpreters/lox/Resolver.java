@@ -74,6 +74,27 @@ class Resolver implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitExtendStmt(Stmt.Extend stmt) {
+        ClassType enclosingClass = currentClass;
+        currentClass = ClassType.CLASS;
+
+        beginScope();
+        scopes.peek().put("this", true);
+
+        for (Stmt.Function method : stmt.methods) {
+            FunctionType declaration = FunctionType.METHOD;
+            if (method.name.lexeme.equals("init")) {
+                declaration = FunctionType.INITIALIZER;
+            }
+            resolveFunction(method, declaration);
+        }
+
+        endScope();
+        currentClass = enclosingClass;
+        return null;
+    }
+
+    @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
         resolve(stmt.expression);
         return null;

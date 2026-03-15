@@ -1,14 +1,23 @@
-class Doughnut {
-  cook() {
-    print "Fry until golden brown.";
+class Person {
+  init(name) {
+    this.name = name;
   }
 }
 
-class BostonCream < Doughnut {
-  cook() {
-    super.cook();
-    print "Pipe full of custard and coat with chocolate.";
+
+extend Person {
+  greet() {
+    print "Hi, I'm " + this.name;
+    print ":D";
   }
 }
 
-BostonCream().cook();
+extend Person{
+    newline(){
+    print "This is a new line too :o using extend!";
+    }
+}
+
+var p = Person("Kenia");
+p.greet();
+p.newline();

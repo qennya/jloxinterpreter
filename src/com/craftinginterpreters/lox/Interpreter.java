@@ -97,6 +97,26 @@ class Interpreter implements Expr.Visitor<Object>,
         return null;
     }
 
+    @Override
+    public Void visitExtendStmt(Stmt.Extend stmt) {
+        Object value = environment.get(stmt.name);
+
+        if (!(value instanceof LoxClass)) {
+            throw new RuntimeError(stmt.name, "Can only extend a class.");
+        }
+
+        LoxClass klass = (LoxClass) value;
+
+        for (Stmt.Function method : stmt.methods) {
+            LoxFunction function = new LoxFunction(
+                    method, environment, method.name.lexeme.equals("init"));
+            klass.defineMethod(method.name.lexeme, function);
+        }
+
+        return null;
+    }
+
+
     void executeBlock(List<Stmt> statements,
                       Environment environment) {
         Environment previous = this.environment;
