@@ -33,6 +33,11 @@ class AstPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitInnerExpr(Expr.Inner expr) {
+        return "inner()";
+    }
+
+    @Override
     public String visitUnaryExpr(Expr.Unary expr) {
         return parenthesize(expr.operator.lexeme, expr.right);
     }

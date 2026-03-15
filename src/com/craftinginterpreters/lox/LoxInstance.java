@@ -17,7 +17,7 @@ class LoxInstance {
             return fields.get(name.lexeme);
         }
 
-        LoxFunction method = klass.findMethod(name.lexeme);
+        LoxFunction method = klass.findTopMethod(name.lexeme);
         if (method != null) return method.bind(this);
 
         throw new RuntimeError(name,
@@ -26,6 +26,10 @@ class LoxInstance {
 
     void set(Token name, Object value) {
         fields.put(name.lexeme, value);
+    }
+
+    LoxClass getLoxClass() {
+        return klass;
     }
 
     @Override

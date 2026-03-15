@@ -14,6 +14,7 @@ abstract class Expr {
     R visitSetExpr(Set expr);
     R visitThisExpr(This expr);
     R visitSuperExpr(Super expr);
+    R visitInnerExpr(Inner expr);
     R visitUnaryExpr(Unary expr);
     R visitVariableExpr(Variable expr);
   }
@@ -159,6 +160,20 @@ abstract class Expr {
     final Token keyword;
     final Token method;
   }
+
+  static class Inner extends Expr {
+    Inner(Token keyword) {
+      this.keyword = keyword;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitInnerExpr(this);
+    }
+
+    final Token keyword;
+  }
+
   static class Unary extends Expr {
     Unary(Token operator, Expr right) {
       this.operator = operator;

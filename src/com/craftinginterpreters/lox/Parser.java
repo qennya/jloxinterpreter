@@ -364,6 +364,13 @@ class Parser {
 
         if (match(THIS)) return new Expr.This(previous());
 
+        if (match(INNER)) {
+            Token keyword = previous();
+            consume(LEFT_PAREN, "Expect '(' after 'inner'.");
+            consume(RIGHT_PAREN, "Expect ')' after 'inner'.");
+            return new Expr.Inner(keyword);
+        }
+
         if (match(IDENTIFIER)) {
             return new Expr.Variable(previous());
         }

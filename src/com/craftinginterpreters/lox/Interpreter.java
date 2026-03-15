@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Collections;
 
 
 class Interpreter implements Expr.Visitor<Object>,
@@ -62,7 +63,6 @@ class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
-
         Object superclass = null;
         if (stmt.superclass != null) {
             superclass = evaluate(stmt.superclass);
@@ -80,14 +80,22 @@ class Interpreter implements Expr.Visitor<Object>,
         }
 
         Map<String, LoxFunction> methods = new HashMap<>();
+        LoxClass klass = new LoxClass(stmt.name.lexeme, (LoxClass) superclass, methods);
+
         for (Stmt.Function method : stmt.methods) {
-            LoxFunction function = new LoxFunction(method, environment,
-                    method.name.lexeme.equals("init"));
+            String methodName = method.name.lexeme;
+            LoxFunction innerMethod = klass.findInnerMethod(methodName, klass);
+
+            LoxFunction function = new LoxFunction(
+                    method,
+                    environment,
+                    method.name.lexeme.equals("init"),
+                    method.name.lexeme,
+                    klass,
+                    null);
+
             methods.put(method.name.lexeme, function);
         }
-
-        LoxClass klass = new LoxClass(stmt.name.lexeme,
-                (LoxClass)superclass, methods);
 
         if (superclass != null) {
             environment = environment.enclosing;
@@ -119,8 +127,8 @@ class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        LoxFunction function = new LoxFunction(stmt, environment,
-                false);
+        LoxFunction function = new LoxFunction(
+                stmt, environment, false, null, null, null);
         environment.define(stmt.name.lexeme, function);
         return null;
     }
@@ -134,6 +142,24 @@ class Interpreter implements Expr.Visitor<Object>,
         }
         return null;
     }
+
+    @Override
+    public Object visitInnerExpr(Expr.Inner expr) {
+        Integer distance = locals.get(expr);
+        Object value;
+        if (distance != null) {
+            value = environment.getAt(distance, "inner");
+        } else {
+            value = globals.get(expr.keyword);
+        }
+
+        if (!(value instanceof LoxFunction)) return null;
+
+        LoxFunction currentMethod = (LoxFunction)value;
+        LoxFunction innerMethod = currentMethod.getInnerMethod();
+
+        if (innerMethod == null) return null;
+        return innerMethod.call(this, java.util.Collections.emptyList());}
 
     @Override
     public Void visitPrintStmt(Stmt.Print stmt) {
