@@ -14,10 +14,10 @@ class LoxClass extends LoxInstance implements LoxCallable {
         this.name = name;
         this.methods = methods;
 
-        // Class object is an "instance" of itself.
+        // xlass object is an "instance" of itself amd not anything else
         this.klass = this;
 
-        // Store static methods as fields on the class object.
+        // atore my static methods as fields on the class object.
         for (Map.Entry<String, LoxFunction> entry : staticMethods.entrySet()) {
             this.set(entry.getKey(), entry.getValue().bind(this));
         }
