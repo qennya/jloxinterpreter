@@ -356,6 +356,17 @@ class Interpreter implements Expr.Visitor<Object>,
                 "Only instances have properties.");
     }
 
+    @Override
+    public Object visitTernaryExpr(Expr.Ternary expr) {
+        Object condition = evaluate(expr.condition);
+
+        if (isTruthy(condition)) {
+            return evaluate(expr.thenBranch);
+        }
+
+        return evaluate(expr.elseBranch);
+    }
+
     private boolean isTruthy(Object object) {
         if (object == null) return false;
         if (object instanceof Boolean) return (boolean) object;

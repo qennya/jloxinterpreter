@@ -1,14 +1,7 @@
-class Doughnut {
-  cook() {
-    print "Fry until golden brown.";
-  }
-}
+print true ? "yes" : "no";
 
-class BostonCream < Doughnut {
-  cook() {
-    super.cook();
-    print "Pipe full of custard and coat with chocolate.";
-  }
-}
+print 5 > 3 ? "bigger" : "smaller";
 
-BostonCream().cook();
+print 10 == 5 ? "equal" : "not equal";
+
+
